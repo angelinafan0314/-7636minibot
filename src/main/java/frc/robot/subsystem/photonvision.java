@@ -136,11 +136,9 @@ public class photonvision extends SubsystemBase {
                     RobotYaw = -robotPose.toPose2d().getRotation().getDegrees();
     
                     if(YawDegree > 0){
-                        // YawDegree = -180 + YawDegree;
                         YawDegree = Yaw.getDegrees();
                     }
                     else if (YawDegree < 0){
-                        // YawDegree = 180 + YawDegree;
                         YawDegree = Yaw.getDegrees();
                     } 
                     else{
