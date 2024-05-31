@@ -98,7 +98,7 @@ public class photonvision extends SubsystemBase {
 
             Optional<Pose3d> TagPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
 
-            if(TagPose.isPresent()){
+            if(TagPose.isPresent() && target.getFiducialId() != -1){
                 robotPose = PhotonUtils.estimateFieldToRobotAprilTag(cameraToTarget, TagPose.get(), cameraTorobot);
             }
             else {
@@ -112,50 +112,104 @@ public class photonvision extends SubsystemBase {
     }
 
     public Rotation2d getYawToPose(){
-        if(target != null & robotPose != null){
-
+        if(target != null && robotPose != null){
         Optional<Pose3d> TagPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
-
-        Yaw = PhotonUtils.getYawToPose(robotPose.toPose2d(), TagPose.get().toPose2d());
-        YawDegree = Yaw.getDegrees();
-        System.out.println("Yaw get");
-        hasYaw = true;
-        return Yaw;
+        
+            if(target.getFiducialId() != -1)
+                Yaw = PhotonUtils.getYawToPose(robotPose.toPose2d(), TagPose.get().toPose2d());
+                YawDegree = Yaw.getDegrees();
+                System.out.println("Yaw get");
+                hasYaw = true;
+                return Yaw;
         }
         System.out.println("Yaw is null");
         hasYaw = false;
         return Yaw = null;
     }
 
-    public double getYawToTarget(){
-        if(Yaw != null){
+    public double getYawToTarget(){    
+        if(target != null){
+            
+            if(target.getFiducialId() == 3 || target.getFiducialId() == 4){
+            
+                if(Yaw != null){
+                    RobotYaw = -robotPose.toPose2d().getRotation().getDegrees();
+    
+                    if(YawDegree > 0){
+                        // YawDegree = -180 + YawDegree;
+                        YawDegree = Yaw.getDegrees();
+                    }
+                    else if (YawDegree < 0){
+                        // YawDegree = 180 + YawDegree;
+                        YawDegree = Yaw.getDegrees();
+                    } 
+                    else{
+                        YawDegree = 0;
+                    }
+        
+                    if(RobotYaw > 0){
+                        RobotYaw = robotPose.toPose2d().getRotation().getDegrees();
+                    }
+                    else if (RobotYaw < 0){
+                        RobotYaw = robotPose.toPose2d().getRotation().getDegrees();
+                    } 
+                    else if (RobotYaw == 0){
+                        RobotYaw = 0;
+                    }
+                    else if (!hasYaw) {
+                        RobotYaw = 0;
+                    }
+                    
+                    if(RobotYaw - YawDegree < -180){
+                        YawToTarget = YawDegree - RobotYaw - 360;
+                    }
+                    else if(RobotYaw - YawDegree > 180){
+                        YawToTarget = YawDegree - RobotYaw + 360;
+                    }
+                    return YawToTarget;
+                }  
+                return 0;
+            }
+            else if(target.getFiducialId() == 7 || target.getFiducialId() == 8){
 
-            RobotYaw = -robotPose.toPose2d().getRotation().getDegrees();
-            if(YawDegree > 0){
-                YawDegree = 180 - YawDegree;
-            }
-            else if (YawDegree < 0){
-                YawDegree = -180 - YawDegree;
-            } 
-            else{
-                YawDegree = 0;
-            }
+                if(Yaw != null){
+                    RobotYaw = -robotPose.toPose2d().getRotation().getDegrees() ;
+    
+                    if(YawDegree > 0){
+                        YawDegree = Yaw.getDegrees();
+                    }
+                    else if (YawDegree < 0){
+                        YawDegree = Yaw.getDegrees();
+                    } 
+                    else{
+                        YawDegree = 0;
+                    }
+        
+                    if(RobotYaw > 0){
+                        RobotYaw = 180 - RobotYaw;
+                    }
+                    else if (RobotYaw < 0){
+                        RobotYaw = -180 - RobotYaw;
+                    } 
+                    else if (RobotYaw == 0){
+                        RobotYaw = 0;
+                    }
+                    else if (!hasYaw) {
+                        RobotYaw = 0;
+                    }
 
-            if(RobotYaw > 0){
-                RobotYaw = 180 - RobotYaw;
+                    if(YawDegree - RobotYaw < -180){
+                        YawToTarget = YawDegree - RobotYaw + 360;
+                    }
+                    else if(YawDegree - RobotYaw > 180){
+                        YawToTarget = YawDegree - RobotYaw - 360;
+                    }
+                }
+                else{
+                    return 0;
+                }
             }
-            else if (RobotYaw < 0){
-                RobotYaw = -180 - RobotYaw;
-            } 
-            else if (RobotYaw == 0){
-                RobotYaw = 0;
-            }
-            else if (!hasYaw) {
-                RobotYaw = 0;
-            }
-            YawToTarget = RobotYaw - YawDegree;
-            return YawToTarget;
-        }  
+        }
         return 0;
     }
 
